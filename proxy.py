@@ -90,10 +90,18 @@ def proxy(socket_client):
             socket_server.connect((str(adresse_serveur), port))
         except Exception as e:
             print ("Probleme de connexion", e.args)
-        #t = threading.Thread(target = client_server , args=(socket_client,socket_server,))
-        #t.start()   
-        #p = threading.Thread(target = server_client , args=(socket_client,socket_server,))
-        #p.start()
+        
+        # Connect to port 443
+        # If successful, send 200 code response
+        reply = "HTTP/1.0 200 Connection established\r\n"
+        reply += "Proxy-agent: Pyx\r\n"
+        reply += "\r\n"
+        socket_client.sendall( reply.encode() )
+        
+        t = threading.Thread(target = client_server , args=(socket_client,socket_server,))
+        t.start()   
+        p = threading.Thread(target = server_client , args=(socket_client,socket_server,))
+        p.start()
         
         #print(page)
         #print()
