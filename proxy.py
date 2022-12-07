@@ -2,7 +2,7 @@ import socket
 import re
 import threading
 from threading import Thread
-
+import time
 
 def client_server(socket_client,socket_server):
     while 1:
@@ -42,12 +42,16 @@ def proxy(socket_client):
     m=message
     message=str(message,'utf8')
     res=message.split();
-
+    if len(res)==0:
+        return
     url=res[1]
     if(re.match('http://([^:|/]*):?([^:\D/$]*)?[/]?([^$]{0,})?',url)):
         urlSplit1 = re.compile(r'http://([^:|/]*):?([^:\D/$]*)?[/]?([^$]{0,})?')
         result1 = urlSplit1.search(url)
         address,port,chemin = result1.groups()
+        if address=="detectportal.firefox.com":
+            return
+
         if len(port)==0:
             port="80"
         print(address,port,chemin)
@@ -62,10 +66,14 @@ def proxy(socket_client):
             print ("Probleme de connexion", e.args)
         req=filter(m)
         print(m)
-        page=None
+        page=b''
         req=bytes(req,'utf8')
         socket_server.sendall(req)
-        page=socket_server.recv(2024)
+        while 1:
+            data = socket_server.recv(4096)
+            if not data:
+                 break
+            page += data
         socket_client.sendall(page)
 
     else:
@@ -82,16 +90,11 @@ def proxy(socket_client):
             socket_server.connect((str(adresse_serveur), port))
         except Exception as e:
             print ("Probleme de connexion", e.args)
-        t = threading.Thread(target = client_server , args=(socket_client,socket_server,))
-        t.start()   
-        p = threading.Thread(target = server_client , args=(socket_client,socket_server,))
-        p.start()
+        #t = threading.Thread(target = client_server , args=(socket_client,socket_server,))
+        #t.start()   
+        #p = threading.Thread(target = server_client , args=(socket_client,socket_server,))
+        #p.start()
         
-        
-            
-
-
-
         #print(page)
         #print()
         #socket_client.send(page)
