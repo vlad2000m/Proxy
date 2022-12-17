@@ -36,17 +36,35 @@ def filter(m):
         packet+=i +'\r\n'
     return packet
 
+# def filter2(m):
+#     m = str(m,"utf-8")
+#     packet = ""
+#     m = m.splitlines()
+#     print(m)
+#     urlSplit1 = re.compile(r'(^.*) HTTP/1.1')
+#     for i in m:
+#         if(re.match('(^.*) HTTP/1.1',i)):
+#             result1 = urlSplit1.search(i)
+#             part1 = result1.group(1)
+#             part1+= ' HTTP/1.0 403 Forbidden'
+#             packet +=part1 + '\r\n'
+#             continue
+#         if(i == "Proxy-Connection: keep-alive" or i == "Accept-Encoding: gzip, deflate"):
+#             continue
+#         packet+=i +'\r\n'
+#     return packet    
+
 
 def proxy(socket_client):
-    message=socket_client.recv(2044)
+    message=socket_client.recv(4044)
     m=message
     message=str(message,'utf8')
     res=message.split();
     if len(res)==0:
         return
     url=res[1]
-    if(re.match('http://([^:|/]*):?([^:\D/$]*)?[/]?([^$]{0,})?',url)):
-        urlSplit1 = re.compile(r'http://([^:|/]*):?([^:\D/$]*)?[/]?([^$]{0,})?')
+    if(re.match('http://([a-zA-Z0-9.\-]+):?([0-9]*)([/a-zA-Z0-9/]*)',url)):
+        urlSplit1 = re.compile(r'http://([a-zA-Z0-9.\-]+):?([0-9]*)([/a-zA-Z0-9/]*)')
         result1 = urlSplit1.search(url)
         address,port,chemin = result1.groups()
         if address=="detectportal.firefox.com":
@@ -58,6 +76,18 @@ def proxy(socket_client):
         adresse_serveur = socket.gethostbyname(address)
         print(adresse_serveur)
         socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # with open(r'keywords.txt', 'r') as file:
+        #     lines = file.readlines()
+        #     for line in lines:
+        #         aline = line.strip()
+        #         if aline in address:
+        #             req=filter2(m)
+        #             print(m)
+        #             page=b''
+        #             req=bytes(req,'utf8')
+        #             socket_server.sendall(req)
+        #         else:
         try: 
             print(port)
             port=int(port)
@@ -72,7 +102,7 @@ def proxy(socket_client):
         while 1:
             data = socket_server.recv(4096)
             if not data:
-                 break
+                break
             page += data
         socket_client.sendall(page)
 
