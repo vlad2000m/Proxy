@@ -7,15 +7,11 @@ import time
 def client_server(socket_client,socket_server):
     while 1:
         m=socket_client.recv(1)
-        print(2)
-        print(m)
         socket_server.sendall(m)
 
 def server_client(socket_client,socket_server):
     while 1:
         m=socket_server.recv(1)
-        print(2)
-        print(m)
         socket_client.sendall(m)
 
 def filter(m):
@@ -36,7 +32,7 @@ def filter(m):
         packet+=i +'\r\n'
     return packet   
 
-#checks if there's forbidden word in teh url
+#checks if there's forbidden words in the url
 def forbidden(address):
     with open(r'keywords.txt', 'r') as file:
             forbidden = False
@@ -49,6 +45,16 @@ def forbidden(address):
                 else:
                     forbidden = False
             return forbidden
+
+#Replace forbidden words in the html page
+def replaceforbid(page):
+    with open(r'keywords.txt', 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            aline = line.strip()
+            if aline.casefold() in page:
+                page = page.replace(aline,"")
+    return page    
 
 
 def proxy(socket_client):
@@ -100,7 +106,11 @@ def proxy(socket_client):
                 if not data:
                     break
                 page += data
+            #page = str(page,'utf8')
+            page = replaceforbid(str(page,'utf8'))
+            page = bytes(page,'utf8')
             socket_client.sendall(page)
+            socket_client.close()
 
     else:
         urlSplit2=re.compile(r'([^:]*):?([^:\D/$]*)?[/]?([^$]{0,})?')
