@@ -114,8 +114,8 @@ def proxy(socket_client: socket.socket) -> None:
             if address + chemin in memo.keys():
                 response=bytes(memo[address+chemin],'utf8')
                 socket_client.sendall(response)
-            else:
-                time.sleep(1)        
+                socket_client.close()
+            else: 
                 if len(port)==0:
                     port="80"
                 adresse_serveur = socket.gethostbyname(address)
