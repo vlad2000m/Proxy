@@ -52,9 +52,18 @@ def replaceforbid(page):
         lines = file.readlines()
         for line in lines:
             aline = line.strip()
-            if aline.casefold() in page:
+            if aline in page:
                 page = page.replace(aline,"")
-    return page    
+    return page   
+
+#change the title of the page
+def changetitle(page):
+    re_debut_titre = re.compile(r'<title>(.*)</title>',re.I)
+    titre = ""
+    resultat = re_debut_titre.search(page)
+    titre += resultat.group(1)
+    page = page.replace(titre,"Proxy")
+    return(page)     
 
 
 def proxy(socket_client):
@@ -108,6 +117,8 @@ def proxy(socket_client):
                 page += data
             #page = str(page,'utf8')
             page = replaceforbid(str(page,'utf8'))
+            page = bytes(page,'utf8')
+            page = changetitle(str(page,'utf8'))
             page = bytes(page,'utf8')
             socket_client.sendall(page)
             socket_client.close()
