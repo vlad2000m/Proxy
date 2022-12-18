@@ -31,28 +31,24 @@ def filter(m):
             part1+= ' HTTP/1.0'
             packet +=part1 + '\r\n'
             continue
-        if(i == "Proxy-Connection: keep-alive" or i == "Accept-Encoding: gzip, deflate"):
+        if(i=="Connection:Keep-alive" or i == "Proxy-Connection: keep-alive" or i == "Accept-Encoding: gzip, deflate"):
             continue
         packet+=i +'\r\n'
-    return packet
+    return packet   
 
-# def filter2(m):
-#     m = str(m,"utf-8")
-#     packet = ""
-#     m = m.splitlines()
-#     print(m)
-#     urlSplit1 = re.compile(r'(^.*) HTTP/1.1')
-#     for i in m:
-#         if(re.match('(^.*) HTTP/1.1',i)):
-#             result1 = urlSplit1.search(i)
-#             part1 = result1.group(1)
-#             part1+= ' HTTP/1.0 403 Forbidden'
-#             packet +=part1 + '\r\n'
-#             continue
-#         if(i == "Proxy-Connection: keep-alive" or i == "Accept-Encoding: gzip, deflate"):
-#             continue
-#         packet+=i +'\r\n'
-#     return packet    
+#checks if there's forbidden word in teh url
+def forbidden(address):
+    with open(r'keywords.txt', 'r') as file:
+            forbidden = False
+            lines = file.readlines()
+            for line in lines:
+                aline = line.strip()
+                if aline in address:
+                    forbidden = True
+                    break
+                else:
+                    forbidden = False
+            return forbidden
 
 
 def proxy(socket_client):
@@ -76,35 +72,35 @@ def proxy(socket_client):
         adresse_serveur = socket.gethostbyname(address)
         print(adresse_serveur)
         socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # with open(r'keywords.txt', 'r') as file:
-        #     lines = file.readlines()
-        #     for line in lines:
-        #         aline = line.strip()
-        #         if aline in address:
-        #             req=filter2(m)
-        #             print(m)
-        #             page=b''
-        #             req=bytes(req,'utf8')
-        #             socket_server.sendall(req)
-        #         else:
-        try: 
-            print(port)
-            port=int(port)
-            socket_server.connect((str(adresse_serveur), port))
-        except Exception as e:
-            print ("Probleme de connexion", e.args)
-        req=filter(m)
-        print(m)
-        page=b''
-        req=bytes(req,'utf8')
-        socket_server.sendall(req)
-        while 1:
-            data = socket_server.recv(4096)
-            if not data:
-                break
-            page += data
-        socket_client.sendall(page)
+        
+        if forbidden(address):
+            reply = "HTTP/1.0 403 Forbidden\r\n"
+            reply += "Proxy-agent: Pyx\r\n"
+            reply += "\r\n"
+            with open(r'index.html', 'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    aline = line.strip()
+                    reply += aline
+            socket_client.sendall(reply.encode())
+        else:
+            try: 
+                print(port)
+                port=int(port)
+                socket_server.connect((str(adresse_serveur), port))
+            except Exception as e:
+                print ("Probleme de connexion", e.args)
+            req=filter(m)
+            print(m)
+            page=b''
+            req=bytes(req,'utf8')
+            socket_server.sendall(req)
+            while 1:
+                data = socket_server.recv(4096)
+                if not data:
+                    break
+                page += data
+            socket_client.sendall(page)
 
     else:
         urlSplit2=re.compile(r'([^:]*):?([^:\D/$]*)?[/]?([^$]{0,})?')
@@ -114,6 +110,7 @@ def proxy(socket_client):
         adresse_serveur = socket.gethostbyname(address)
         print(adresse_serveur)
         socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         try:
             print(port)
             port=int(port)
@@ -132,7 +129,7 @@ def proxy(socket_client):
         t.start()   
         p = threading.Thread(target = server_client , args=(socket_client,socket_server,))
         p.start()
-        
+            
         #print(page)
         #print()
         #socket_client.send(page)
