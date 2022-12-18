@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+    <title>Test server</title>
+</head>
+<body>
+    <h1>Proxy Web Interface</h1>
+    <form action="/" method="POST">
+        <div>
+            <label for="filter">Filter choice:</label>
+            <select name="filter_choice" id="filter_choice">
+                <option value="activate_filter">Activate Filter</option>
+                <option value="deactivate_filter">Deactivate Filter</option>
+            </select>
+        </div>
+        <br><br>
+        <div>
+            <label for="forbidden_keywords">List of forbidden keywords (one word per line)</label><br><br>
+            <textarea name="forbidden_keywords" id="forbidden_keywords" cols="100" rows="20"></textarea>
+        </div>
+        <div><button type="submit">Submit</button></div>
+    </form>
+</body>
