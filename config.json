@@ -1,0 +1,10 @@
+{
+    "filter_choice": "activate_filter",
+    "forbidden_keywords": [
+        "server",
+        "adresse",
+        "GPGPU",
+        "bonnefoi",
+        "port"
+    ]
+}
