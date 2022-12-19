@@ -21,15 +21,19 @@ class ConfigProxyInterface(BaseHTTPRequestHandler):
         with open("web.html", "r") as f:
             html_contents = f.readlines()
         if filter_choice == "deactivate_filter":
-            html_contents[10], html_contents[11] = html_contents[11], html_contents[10]
+            html_contents[14], html_contents[15] = html_contents[15], html_contents[14]
         if len(forbidden_keywords) > 0:
-            temp = html_contents[17].split("><")
+            for i in range(len(html_contents)):
+                print(f"[{i}]:", html_contents[i]) 
+            temp = html_contents[18].split("><")
             temp[0] += ">"
             temp[1] = "<" + temp[1]
             words = ""
             for w in forbidden_keywords:
                 words += w + "&#13;&#10"
-            html_contents[17] = temp[0] + words + temp[1]
+            html_contents[18] = temp[0] + words + temp[1]
+        for i in range(len(html_contents)):
+                print(f"[{i}]:", html_contents[i]) 
         for l in html_contents:
             self.wfile.write(bytes(l, "utf-8"))
 
