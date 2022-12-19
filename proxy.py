@@ -119,60 +119,60 @@ def proxy(socket_client: socket.socket) -> None:
                 if len(port)==0:
                     port="80"
                 adresse_serveur = socket.gethostbyname(address)
-                if address in memo.keys():
-                    socket_client.sendall(memo[address])
-                else:
-                    print("Fetch")
-                    socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-                    try:
-                        port = int(port)
-                        socket_server.connect((adresse_serveur, port))
-                    except Exception as e:
-                        print("Probleme de connexion", e.args)
-                    req = filter(msg)
-                    page = b''
-                    req = bytes(req, 'utf-8')
-                    socket_server.sendall(req)
-                    while 1:
-                        data = socket_server.recv(4096)
-                        if not data:
-                            break
-                        page += data
+                # if address in memo.keys():
+                #     socket_client.sendall(memo[address])
+                # else:
+                print("Fetch")
+                socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+                try:
+                    port = int(port)
+                    socket_server.connect((adresse_serveur, port))
+                except Exception as e:
+                    print("Probleme de connexion", e.args)
+                req = filter(msg)
+                page = b''
+                req = bytes(req, 'utf-8')
+                socket_server.sendall(req)
+                while 1:
+                    data = socket_server.recv(4096)
+                    if not data:
+                        break
+                    page += data
 
-                    if b'Content-Type: text/html' in page:
-                        page = page.decode()
-                        if filter_choice == "activate_filter":
-                            page = replaceforbid(page)
-                        page = chgTitle(page)
-                        page = bytes(page,'utf8')
-                    socket_client.sendall(page)
-                    socket_client.close()
+                if b'Content-Type: text/html' in page:
+                    page = page.decode()
+                    if filter_choice == "activate_filter":
+                        page = replaceforbid(page)
+                    page = chgTitle(page)
+                    page = bytes(page,'utf8')
+                socket_client.sendall(page)
+                socket_client.close()
 
-                    try:
-                        updateVisits=open("nbVisits.txt",'w')
-                    except Exception as e:
-                        print(e.args)
-                        sys.exit(1)
+                try:
+                    updateVisits=open("nbVisits.txt",'w')
+                except Exception as e:
+                    print(e.args)
+                    sys.exit(1)
 
-                    if address+chemin not in memo.keys():
-                        if address+chemin in nb_of_visits.keys():
-                            if nb_of_visits[address+chemin] >= 5:
-                                try:
-                                    memoAdd=open('urls.txt','a+')
-                                except Exception as e:
-                                    print(e.args)
-                                    sys.exit(1)
-                                memoAdd.write('\n'+address+chemin+':'+str(page,'utf8'))
-                                memoAdd.write('\nend')
-                                memoAdd.close()
-                            nb_of_visits[address+chemin]+=1
-                            for site in nb_of_visits.keys():
-                                updateVisits.write(site+":"+str(nb_of_visits[site])+'\n')
-                            updateVisits.close()
-                        else:
-                            nb_of_visits[address+chemin]=1
-                            for site in nb_of_visits.keys():
-                                updateVisits.write(site+":"+str(nb_of_visits[site])+'\n')
+                if address+chemin not in memo.keys():
+                    if address+chemin in nb_of_visits.keys():
+                        if nb_of_visits[address+chemin] >= 5:
+                            try:
+                                memoAdd=open('urls.txt','a+')
+                            except Exception as e:
+                                print(e.args)
+                                sys.exit(1)
+                            memoAdd.write('\n'+address+chemin+':'+str(page,'utf8'))
+                            memoAdd.write('\nend')
+                            memoAdd.close()
+                        nb_of_visits[address+chemin]+=1
+                        for site in nb_of_visits.keys():
+                            updateVisits.write(site+":"+str(nb_of_visits[site])+'\n')
+                        updateVisits.close()
+                    else:
+                        nb_of_visits[address+chemin]=1
+                        for site in nb_of_visits.keys():
+                            updateVisits.write(site+":"+str(nb_of_visits[site])+'\n')
 
     # In case HTTPS Protocol was used
     else:
